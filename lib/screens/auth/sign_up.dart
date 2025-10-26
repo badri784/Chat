@@ -1,7 +1,10 @@
-import 'dart:developer';
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:chat_app/screens/auth/sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+final _firebase = FirebaseAuth.instance;
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -28,13 +31,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
-  submit() {
+  Future<void> submit() async {
     final valid = _formKey.currentState!.validate();
-    if (valid) {
-      _formKey.currentState!.save();
+    if (!valid) {
+      return;
     }
-    log('pass${passwordController.text}');
-    log('confirm pass${confirmPasswordController.text}');
+
+    try {
+      final UserCredential usercredential = await _firebase
+          .createUserWithEmailAndPassword(
+            email: emailController.text,
+            password: passwordController.text,
+          );
+      if (usercredential.user != null) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account created successfully')),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Authentication failed')),
+      );
+    }
+    _formKey.currentState!.save();
   }
 
   @override
@@ -44,7 +65,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: Column(
           children: [
             Image.asset(
-              'assets/image/Vector 2 (2).png',
+              'assets/image/signup.png',
               width: double.infinity,
               fit: BoxFit.cover,
             ),

@@ -32,7 +32,7 @@ class _SignInScreenState extends State<SignInScreen> {
               alignment: Alignment.bottomLeft,
               children: [
                 Image.asset(
-                  'assets//image/Vector 2 (1).png',
+                  'assets/image/signin.png',
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
@@ -91,6 +91,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         }
                       },
                       decoration: InputDecoration(
+                        helperText: 'password must be at least 6 characters',
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {
@@ -148,25 +149,22 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 65),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10, right: 10),
-                          child: ElevatedButton(
-                            onPressed: submit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xffff8383),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
+                        ElevatedButton(
+                          onPressed: submit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xffff8383),
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          ),
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),

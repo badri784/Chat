@@ -15,7 +15,12 @@ class _AuthScreenState extends State<AuthScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Image.asset('assets/image/Vector 2.png'),
+            Image.asset(
+              'assets/image/home.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+            ),
+
             const Padding(
               padding: EdgeInsets.only(left: 27),
               child: Align(
