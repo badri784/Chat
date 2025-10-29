@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:chat_app/screens/auth/sign_in.dart';
+import 'package:chat_app/screens/chat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -36,8 +37,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!valid) {
       return;
     }
-
     try {
+      _formKey.currentState!.save();
       final UserCredential usercredential = await _firebase
           .createUserWithEmailAndPassword(
             email: emailController.text,
@@ -45,17 +46,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
           );
       if (usercredential.user != null) {
         ScaffoldMessenger.of(context).clearSnackBars();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ChatScreen()),
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created successfully')),
         );
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Authentication failed')),
-      );
+      if (e.code == 'email-already-in-use') {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('The email is already in use')),
+        );
+      } else if (e.code == 'weak-password') {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Weak password, please choose a stronger one'),
+          ),
+        );
+      } else if (e.code == 'invalid-email') {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('The email address is not valid')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: ${e.message}')),
+        );
+      }
     }
-    _formKey.currentState!.save();
   }
 
   @override
@@ -145,7 +167,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       validator: (value) {
                         if (value == null ||
                             value.trim().isEmpty ||
-                            value.length < 6 ||
                             passwordController.text !=
                                 confirmPasswordController.text) {
                           return 'Please enter a valid Password.';
@@ -153,6 +174,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         return null;
                       },
                       decoration: InputDecoration(
+                        helperText: 'password must be at least 6 characters',
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {

@@ -1,5 +1,9 @@
 import 'package:chat_app/screens/auth/sign_up.dart';
+import 'package:chat_app/screens/chat.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+final _firebaseAuth = FirebaseAuth.instance;
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -14,10 +18,74 @@ class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   var emailtext = '';
   var passwordtext = '';
-  submit() {
+  bool isLoading = false;
+
+  Future<void> newSubmit() async {
+    setState(() {
+      isLoading = true;
+    });
     final valid = _formKey.currentState!.validate();
-    if (valid) {
-      _formKey.currentState!.save();
+    if (!valid) return;
+    _formKey.currentState!.save();
+    try {
+      final UserCredential usersignin = await _firebaseAuth
+          .signInWithEmailAndPassword(email: emailtext, password: passwordtext);
+      if (usersignin.user != null) {
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => const ChatScreen()),
+        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Signed in successfully')));
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      switch (e.code) {
+        case 'network-request-failed':
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No internet connection.')),
+          );
+          break;
+        case 'too-many-requests':
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Too many requests. Try again later.'),
+            ),
+          );
+          break;
+        case 'user-disabled':
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('This user has been disabled.')),
+          );
+        case 'invalid-email':
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('The email address is badly formatted.'),
+            ),
+          );
+          break;
+        case 'user-not-found':
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No user found for that email.')),
+          );
+          break;
+        case 'wrong-password':
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Wrong password provided for that user.'),
+            ),
+          );
+          break;
+        default:
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Authentication error: ${e.message}')),
+          );
+      }
+
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -91,7 +159,6 @@ class _SignInScreenState extends State<SignInScreen> {
                         }
                       },
                       decoration: InputDecoration(
-                        helperText: 'password must be at least 6 characters',
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {
@@ -151,7 +218,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     Column(
                       children: [
                         ElevatedButton(
-                          onPressed: submit,
+                          onPressed: newSubmit,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xffff8383),
                             minimumSize: const Size(double.infinity, 50),
@@ -159,14 +226,16 @@ class _SignInScreenState extends State<SignInScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child: isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -180,8 +249,12 @@ class _SignInScreenState extends State<SignInScreen> {
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (_) => const SignUpScreen(),
+                              PageRouteBuilder(
+                                pageBuilder: (_, __, ___) =>
+                                    const SignUpScreen(),
+                                transitionDuration: const Duration(
+                                  milliseconds: 0,
+                                ),
                               ),
                             );
                           },
