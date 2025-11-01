@@ -1,4 +1,6 @@
 import 'package:chat_app/screens/auth/auth_screen.dart';
+import 'package:chat_app/widget/massage.dart';
+import 'package:chat_app/widget/new_massage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -21,19 +23,24 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
             onPressed: () async {
               _firebaseAuth.signOut();
-              await Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const AuthScreen()),
-              );
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Signed out successfully')),
+              );
+              await Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const AuthScreen()),
               );
             },
             icon: const Icon(Icons.logout),
           ),
         ],
       ),
-      body: const Center(child: Text('Welcome to the chat screen')),
+      body: const Column(
+        children: [
+          Expanded(child: ChatMassage()),
+          NewMassage(),
+        ],
+      ),
     );
   }
 }

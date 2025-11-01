@@ -1,7 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:chat_app/screens/auth/sign_in.dart';
 import 'package:chat_app/screens/chat.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -18,14 +21,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
   @override
   void dispose() {
     super.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     emailController.dispose();
-    phoneController.dispose();
+    usernameController.dispose();
   }
 
   bool _obscurepassword = true;
@@ -46,14 +49,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
           );
       if (usercredential.user != null) {
         ScaffoldMessenger.of(context).clearSnackBars();
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ChatScreen()),
-        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created successfully')),
         );
       }
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const ChatScreen()));
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(usercredential.user!.uid)
+          .set({
+            'username': usernameController.text,
+            'email': emailController.text,
+            'userId': usercredential.user!.uid,
+            //  'createdAt': Timestamp.now(),
+            'emailpassword': passwordController.text,
+          });
     } on FirebaseAuthException catch (e) {
+      log(e.code);
       if (e.code == 'email-already-in-use') {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -134,20 +148,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 6),
                     TextFormField(
                       onSaved: (newValue) {
-                        phoneController.text = newValue!;
+                        usernameController.text = newValue!;
                       },
-                      keyboardType: TextInputType.number,
+                      keyboardType: TextInputType.name,
                       validator: (value) {
                         if (value == null ||
                             value.trim().isEmpty ||
-                            value.length < 10) {
-                          return 'Please enter a valid Phone Number.';
+                            value.length < 4) {
+                          return 'Please enter a valid user name.';
                         }
                         return null;
                       },
                       decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.phone),
-                        labelText: 'Phone Numebr :',
+                        prefixIcon: Icon(Icons.verified_user),
+                        labelText: 'User Name :',
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
                             color: Color(0xffff8383),

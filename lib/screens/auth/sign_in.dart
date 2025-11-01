@@ -31,12 +31,12 @@ class _SignInScreenState extends State<SignInScreen> {
       final UserCredential usersignin = await _firebaseAuth
           .signInWithEmailAndPassword(email: emailtext, password: passwordtext);
       if (usersignin.user != null) {
-        await Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => const ChatScreen()),
-        );
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Signed in successfully')));
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => const ChatScreen()),
+        );
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).clearSnackBars();
@@ -53,26 +53,15 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
           );
           break;
-        case 'user-disabled':
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('This user has been disabled.')),
-          );
-        case 'invalid-email':
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('The email address is badly formatted.'),
-            ),
-          );
-          break;
         case 'user-not-found':
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('No user found for that email.')),
           );
           break;
-        case 'wrong-password':
+        case 'invalid-credential':
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Wrong password provided for that user.'),
+              content: Text('Wrong email or password provided for that user.'),
             ),
           );
           break;
