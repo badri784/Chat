@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class NewMassage extends StatefulWidget {
@@ -16,11 +18,23 @@ class _NewMassageState extends State<NewMassage> {
     massageController.dispose();
   }
 
-  sentNewMassage() {
+  sentNewMassage() async {
     final text = massageController.text;
     if (text.trim().isEmpty) return;
-
+    FocusScope.of(context).unfocus();
     massageController.clear();
+    final User user = FirebaseAuth.instance.currentUser!;
+
+    final userDate = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+    await FirebaseFirestore.instance.collection('chats').add({
+      'user': user.uid,
+      'text': text,
+      'username': userDate.data()!['username'],
+      'createdAt': Timestamp.now(),
+    });
   }
 
   @override

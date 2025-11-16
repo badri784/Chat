@@ -63,7 +63,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             'username': usernameController.text,
             'email': emailController.text,
             'userId': usercredential.user!.uid,
-            //  'createdAt': Timestamp.now(),
             'emailpassword': passwordController.text,
           });
     } on FirebaseAuthException catch (e) {
