@@ -153,7 +153,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       validator: (value) {
                         if (value == null ||
                             value.trim().isEmpty ||
-                            value.length < 4) {
+                            value.length < 3) {
                           return 'Please enter a valid user name.';
                         }
                         return null;
